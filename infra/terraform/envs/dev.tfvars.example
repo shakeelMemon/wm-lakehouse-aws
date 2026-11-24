@@ -1,0 +1,10 @@
+env                       = "dev"
+region                    = "ca-central-1"
+data_scale                = "small"
+alert_email               = "you@example.com"
+lf_admin_arns             = ["arn:aws:iam::<ACCOUNT_ID>:user/wm-deployer", "arn:aws:iam::<ACCOUNT_ID>:role/service-role/AmazonSageMakerAdminIAMExecutionRole"]
+analyst_principal_arns    = ["arn:aws:iam::<ACCOUNT_ID>:user/wm-deployer", "arn:aws:iam::<ACCOUNT_ID>:role/service-role/AmazonSageMakerAdminIAMExecutionRole"]
+bi_gateway_principal_arn  = "arn:aws:iam::<ACCOUNT_ID>:user/wm-deployer"
+enable_table_level_grants = true
+advisor_row_filters       = {}
+create_mwaa               = false

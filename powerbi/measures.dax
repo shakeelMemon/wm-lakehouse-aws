@@ -1,0 +1,121 @@
+// =====================================================================================
+// WM Performance semantic model: certified DAX measures
+// Source tables are Athena views in wm_semantic (see powerbi/README.md for the model).
+// Measure names match metric_catalog.yml (powerbi_measure), so the catalog, Athena and
+// Power BI tell the same story. Ratios are ratio-of-sums: correct for any date range.
+// Put these in a dedicated "_Measures" table; format strings noted after each measure.
+// =====================================================================================
+
+// ---------------------------------------------------------------- Assets & flows
+Month-End AUM =
+// Semi-additive: value on the last month in the current filter context, never a sum over months
+CALCULATE (
+    SUM ( 'AUM Monthly'[month_end_aum_cad] ),
+    LASTNONBLANK ( 'Date'[date_key], CALCULATE ( SUM ( 'AUM Monthly'[month_end_aum_cad] ) ) )
+)                                                                  // $#,0
+
+Beginning AUM =
+CALCULATE (
+    SUM ( 'AUM Monthly'[begin_aum_cad] ),
+    FIRSTNONBLANK ( 'Date'[date_key], CALCULATE ( SUM ( 'AUM Monthly'[begin_aum_cad] ) ) )
+)                                                                  // $#,0
+
+Average AUM =
+DIVIDE (
+    SUMX ( 'AUM Monthly', ( 'AUM Monthly'[begin_aum_cad] + 'AUM Monthly'[month_end_aum_cad] ) / 2 ),
+    DISTINCTCOUNT ( 'AUM Monthly'[month] )
+)                                                                  // $#,0
+
+Net New Assets = SUM ( 'AUM Monthly'[net_new_assets_cad] )         // $#,0
+Gross Inflows = SUM ( 'AUM Monthly'[gross_inflows_cad] )           // $#,0
+Gross Outflows = SUM ( 'AUM Monthly'[gross_outflows_cad] )         // $#,0
+Market Movement = SUM ( 'AUM Monthly'[market_movement_cad] )       // $#,0
+
+Organic Growth Rate (Annualized) =
+DIVIDE ( [Net New Assets] * 12, SUM ( 'AUM Monthly'[begin_aum_cad] ) )   // 0.0%
+
+NNA FYTD =
+// Fiscal year ends 31 October (FY2026 = Nov 2025 - Oct 2026)
+TOTALYTD ( [Net New Assets], 'Date'[date_key], "10/31" )          // $#,0
+
+NNA Prior FYTD =
+CALCULATE ( [NNA FYTD], SAMEPERIODLASTYEAR ( 'Date'[date_key] ) )   // $#,0
+
+NNA vs Prior FYTD = [NNA FYTD] - [NNA Prior FYTD]                  // +$#,0;-$#,0
+
+AUM Bridge Check =
+// Should always be 0: begin + NNA + market - end (for a single month)
+[Beginning AUM] + [Net New Assets] + [Market Movement] - [Month-End AUM]
+
+// ---------------------------------------------------------------- Revenue
+Fee Revenue = SUM ( 'AUM Monthly'[fee_revenue_cad] )               // $#,0
+Commission Revenue = SUM ( 'AUM Monthly'[commission_revenue_cad] ) // $#,0
+Total Revenue = SUM ( 'AUM Monthly'[total_revenue_cad] )           // $#,0
+
+Return on Assets (bps) =
+DIVIDE (
+    [Total Revenue] * 12 * 10000,
+    SUMX ( 'AUM Monthly', ( 'AUM Monthly'[begin_aum_cad] + 'AUM Monthly'[month_end_aum_cad] ) / 2 )
+)                                                                  // 0.0
+
+// ---------------------------------------------------------------- Clients & engagement (quality)
+Household Months = COUNTROWS ( 'Client Experience' )
+
+Active Households =
+CALCULATE (
+    DISTINCTCOUNT ( 'Client Experience'[household_id] ),
+    LASTNONBLANK ( 'Date'[date_key], CALCULATE ( COUNTROWS ( 'Client Experience' ) ) ),
+    'Client Experience'[month_end_aum_cad] > 0
+)                                                                  // #,0
+
+Meeting Coverage % =
+DIVIDE ( COUNTROWS ( FILTER ( 'Client Experience', 'Client Experience'[meetings] > 0 ) ), [Household Months] )  // 0.0%
+
+Digital Adoption % =
+DIVIDE ( SUM ( 'Client Experience'[digital_active_flag] ), [Household Months] )   // 0.0%
+
+Complaints per 100 Households (Monthly) =
+DIVIDE ( SUM ( 'Client Experience'[complaints] ) * 100, [Household Months] )      // 0.00
+
+NPS Responses = SUM ( 'Client Experience'[nps_responses] )          // #,0
+
+NPS =
+DIVIDE (
+    ( SUM ( 'Client Experience'[promoters] ) - SUM ( 'Client Experience'[detractors] ) ) * 100,
+    [NPS Responses]
+)                                                                  // 0
+
+NPS Reliability =
+IF ( [NPS Responses] < 30, "Directional (< 30 responses)", "Reliable" )
+
+Attrition Rate (Annualized) =
+DIVIDE ( SUM ( 'Client Experience'[attrition_flag] ) * 12, [Household Months] )   // 0.0%
+
+// ---------------------------------------------------------------- Service (quality)
+SLA Breach Rate =
+DIVIDE ( SUM ( 'Service Quality'[sla_breaches] ), SUM ( 'Service Quality'[cases_closed] ) )   // 0.0%
+
+Average Resolution Hours =
+DIVIDE (
+    SUMX ( 'Service Quality', 'Service Quality'[avg_resolution_hours] * 'Service Quality'[cases_closed] ),
+    SUM ( 'Service Quality'[cases_closed] )
+)                                                                  // 0.0
+
+// ---------------------------------------------------------------- Initiative impact
+Incremental per Household =
+// One campaign + one metric selected: the difference-in-differences estimate
+IF ( HASONEVALUE ( 'Campaign Impact'[metric] ), SUM ( 'Campaign Impact'[did_estimate] ) )
+
+Impact 95% CI =
+IF (
+    HASONEVALUE ( 'Campaign Impact'[metric] ),
+    FORMAT ( SUM ( 'Campaign Impact'[ci_low] ), "#,0.00" ) & " to " & FORMAT ( SUM ( 'Campaign Impact'[ci_high] ), "#,0.00" )
+)
+
+Impact Verdict = SELECTEDVALUE ( 'Campaign Impact'[verdict] )
+
+// ---------------------------------------------------------------- Platform health
+Failed Checks = CALCULATE ( COUNTROWS ( 'Platform Health' ), 'Platform Health'[status] = "FAIL" )
+Critical Failures =
+CALCULATE ( COUNTROWS ( 'Platform Health' ), 'Platform Health'[status] = "FAIL", 'Platform Health'[severity] = "CRITICAL" )
+Data As Of = FORMAT ( MAX ( 'AUM Daily'[as_of_date] ), "dd mmm yyyy" )

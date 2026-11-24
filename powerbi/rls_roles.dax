@@ -1,0 +1,26 @@
+// =====================================================================================
+// Power BI row-level security (Modeling > Manage roles)
+// The entitlement table 'Access Map' is imported from wm_semantic.advisor_access_map
+// (maintained by support, SOP-07). Filtering 'Advisor' propagates through relationships to
+// every fact table keyed by advisor_id.
+// =====================================================================================
+
+// Role: Advisor Book  (advisors and branch managers)
+// Table filter on 'Advisor':
+'Advisor'[advisor_id]
+    IN CALCULATETABLE (
+        VALUES ( 'Access Map'[advisor_id] ),
+        'Access Map'[user_email] = USERPRINCIPALNAME ()
+    )
+
+// Role: Region  (regional directors; optional second mapping table 'Region Access')
+// Table filter on 'Advisor':
+'Advisor'[region]
+    IN CALCULATETABLE (
+        VALUES ( 'Region Access'[region] ),
+        'Region Access'[user_email] = USERPRINCIPALNAME ()
+    )
+
+// Role: Leadership  (all books) -> no filter expression; assign the leadership AAD group.
+
+// Hide 'Access Map' and 'Region Access' from report view. Test with "View as" before publishing.
