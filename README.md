@@ -65,6 +65,10 @@ tests/                    unit + local end-to-end tests (no AWS needed)
 docs/                     architecture, traceability, runbook, metrics, Databricks→AWS mapping
 ```
 
+## Power BI report
+
+**[View the report (PDF, 3 pages)](powerbi/WM_Performance_Report.pdf)**: Executive Overview with the AUM bridge, Advisor Scorecard, and Platform Health. Details in [`powerbi/README.md`](powerbi/README.md).
+
 ## Quick start
 
 ```bash

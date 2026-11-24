@@ -44,13 +44,15 @@ Measures: [`measures.dax`](measures.dax) · Row-level security: [`rls_roles.dax`
 
 ## 3. Report pages
 
+**See the report:** [`WM_Performance_Report.pdf`](WM_Performance_Report.pdf) (exported from Power BI Desktop, 3 pages). The source file is [`WM_Performance.pbix`](WM_Performance.pbix).
+
 | Page | Visuals |
 |---|---|
-| **Executive overview** | Cards: Month-End AUM, Net New Assets, Organic Growth, ROA (bps), Total Revenue, Data As Of · Line: AUM Daily by client segment · Columns: NNA by month and segment · Waterfall: AUM bridge (Beginning AUM → NNA → Market Movement → Month-End AUM) · Bar: asset mix · Slicers: region, segment, fiscal year |
-| **Advisor scorecard** | Scatter: quantity_score vs quality_score (colour = region, details = advisor) · Bar: net flows by advisor · Table: full scorecard with conditional formatting |
-| **Client experience & service** | Lines: NPS with the NPS Reliability tooltip, Digital Adoption % · Columns: Complaints per 100 Households by region · Line: SLA Breach Rate by case category |
-| **Initiative impact** | Lines: Campaign Trend (treatment vs control by relative month) · Table: Campaign Impact with Incremental per Household, Impact 95% CI and Impact Verdict (icons: lift = green, no effect = grey, guardrail breach = red) |
-| **Platform health** | Cards: Failed Checks, Critical Failures · Table: latest checks |
+| **Executive Overview** | Cards: Month-End AUM, Net New Assets, Organic Growth Rate, ROA (bps), Total Revenue, Data As Of · Line: AUM by client segment · Columns: Net New Assets by month and segment · Waterfall: AUM bridge (Beginning AUM → Net New Assets → Market Movement → Month-End AUM) · Bar: asset mix at month-end · Slicers: region, client segment, fiscal year |
+| **Advisor Scorecard** | Cards: advisors, AUM, net flows, NPS · Scatter: quantity score vs quality score (size = AUM, colour = region) · Bar: top 10 advisors by net flows · Table: full scorecard with conditional formatting |
+| **Platform Health** | Pipeline status, checks run, pass rate, failed and critical-failed checks, last health check · Bar: checks by category · Table: latest checks |
+
+Planned next: a Client Experience & Service page (NPS, digital adoption, complaints, SLA breaches) and an Initiative Impact page (campaign trend and difference-in-differences results).
 
 ## 4. Refresh and deployment
 
