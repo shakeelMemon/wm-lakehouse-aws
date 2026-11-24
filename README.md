@@ -11,7 +11,7 @@ registered plans (RRSP, TFSA, RESP, RRIF, FHSA), advisor → branch → region h
 custodian re-sends and restatements, and two randomized campaigns with known effects. Every
 number can therefore be checked against ground truth.
 
-> **How the project maps to the role:** see [`docs/requirements_traceability.md`](docs/requirements_traceability.md).
+> **What the project covers:** see [`docs/requirements_traceability.md`](docs/requirements_traceability.md).
 > **Coming from the Databricks version?** See [`docs/databricks_to_aws.md`](docs/databricks_to_aws.md).
 
 ## Architecture

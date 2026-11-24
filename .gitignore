@@ -17,4 +17,5 @@ Thumbs.db
 # Local environment values (real account ID, email) - copy the .example files
 infra/terraform/envs/dev.tfvars
 infra/terraform/envs/dev.backend.hcl
+docs/WM_Lakehouse_Project_Brief.pdf
 powerbi/Fund*.pbix

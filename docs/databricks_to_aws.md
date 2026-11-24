@@ -1,9 +1,9 @@
-# Databricks → AWS mapping (and interview talking points)
+# Databricks → AWS mapping
 
 The business logic is identical in both versions: the same generator, DQ rules, gold SQL,
 metrics and impact estimator. Only the platform services change.
 
-| Concern | Databricks version | AWS version | Why it's equivalent / what to say |
+| Concern | Databricks version | AWS version | Why it's equivalent |
 |---|---|---|---|
 | Landing | UC Volume | S3 `raw` bucket, `landing/<feed>/period=…/` | KMS, versioning and lifecycle to Glacier IR after 90 days |
 | Incremental file pickup | Auto Loader | **Glue job bookmarks** (`transformation_ctx` per feed + `job.commit()`) | Bookmarks advance only after every feed is written. A failed run re-reads, and silver MERGE makes that idempotent |
@@ -22,7 +22,7 @@ metrics and impact estimator. Only the platform services change.
 | Alerting | Job email notifications | EventBridge (Glue Job State Change) → SNS, plus the Airflow `on_failure_callback` | Alerts even if Airflow is down |
 | IaC / CI | Asset Bundles | **Terraform** + GitHub Actions with OIDC | dev/test/prod tfvars, smoke run after deploy |
 
-## Likely interview questions
+## Design questions and answers
 
 **How do you make Glue ingestion idempotent?** Bookmarks give at-most-once pickup per successful run. If a run fails after writing some feeds, bookmarks aren't committed, so the next run re-reads those files. Bronze may then hold duplicates, but silver MERGEs on the business key with a latest-wins condition, so reporting never double counts.
 
