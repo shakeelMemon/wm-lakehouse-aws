@@ -90,7 +90,7 @@ Full steps are in [`docs/runbook.md`](docs/runbook.md).
 * **Semantic layer runs.** Every Athena view parses as Trino SQL and executes against the gold tables (transpiled with sqlglot).
 * **Impact recovers the injected effects** (`small` preset): consolidation outreach lifts net flows by about $12.8K per household per month (95% CI $4.4K to $20.1K) with no change in complaints. The digital nudge lifts sessions by about 40% and correctly shows no effect on flows.
 
-## What is tested where
+## What was tested where
 
 * **Tested locally:** the generator, bronze/silver functions, DQ rules, every gold SQL statement, the health checks, the Athena views, the impact estimator, and the contracts between Terraform, Glue scripts and Airflow DAGs. `terraform fmt` passes.
-* **Needs an AWS account:** Glue DynamicFrame bookmarks, Iceberg MERGE and CTAS on the Glue catalog, Lake Formation grants, MWAA, Power BI and Unified Studio. These use documented AWS APIs but haven't been run against a live account from this repository. Run `terraform validate` in CI (provider download needed).
+* **Deployed and run in AWS (ca-central-1, dev):** Terraform builds S3, KMS, IAM, Glue, Athena, Lake Formation (LF-tags and grants) and SNS alerts. The Glue jobs run landing → bronze → silver → gold → semantic on the live account, Power BI reads the semantic views through the Athena ODBC driver, and SageMaker Unified Studio has governed read access. MWAA is switched off in dev (`create_mwaa = false`) to save cost, so the pipeline is started with `scripts/wm-support.ps1` (`Invoke-WmPipeline`) instead of Airflow.
